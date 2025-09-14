@@ -17,10 +17,10 @@ app.use(express.json())
 
 app.get('/posts', async (req, res) => {
     const result = await pool.query('SELECT * FROM posts')
-    console.log(result)
+    console.log(result?.rows)
     res.send(`
         <ul>
-            ${result?.rows?.map(row => `<li>${row.id}, ${row.url}, ${row.lng}, ${row.lat}</li>`).join('')}
+            ${result?.rows?.map(row => `<li>${row.id}, ${row.url}, ${row.loc.x}, ${row.loc.y}</li>`).join('')}
         </ul>
         <form action="/posts" method="POST">
             <input type="text" name="url" placeholder="URL" required>
@@ -34,8 +34,8 @@ app.get('/posts', async (req, res) => {
 app.post('/posts', async (req, res) => {
     const { url, lng, lat } = req.body
     await pool.query(`
-        INSERT INTO posts (url, lng, lat, loc) VALUES ($1, $2, $3, $4)`, 
-        [url, lng, lat, `(${lat},${lng})`]
+        INSERT INTO posts (url, loc) VALUES ($1, $2)`, 
+        [url, `(${lat},${lng})`]
     )
     res.redirect('/posts')
 })
